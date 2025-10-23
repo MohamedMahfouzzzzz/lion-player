@@ -1,0 +1,887 @@
+/**
+ * LionPlayer - Next-Generation Video Player
+ * Simplified with Speed-Only Settings
+ */
+
+/* CSS Custom Properties for Dynamic Theming */
+:root {
+    --lion-primary: #ff0050;
+    --lion-primary-glow: rgba(255, 0, 80, 0.5);
+    --lion-secondary: #00d4ff;
+    --lion-dark: #0a0a0a;
+    --lion-surface: rgba(255, 255, 255, 0.05);
+    --lion-surface-hover: rgba(255, 255, 255, 0.1);
+    --lion-text: #ffffff;
+    --lion-text-secondary: rgba(255, 255, 255, 0.7);
+    --lion-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --lion-shadow-glow: 0 0 20px rgba(255, 0, 80, 0.3);
+    --lion-border-radius: 16px;
+    --lion-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --lion-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --lion-buffer-color: rgba(255, 255, 255, 0.3);
+    --lion-buffer-loading: rgba(255, 0, 80, 0.3);
+}
+
+/* Base player styles */
+.lion-player {
+    position: relative;
+    display: block;
+    width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    user-select: none;
+    line-height: 1.0;
+    direction: ltr;
+    background: var(--lion-background);
+    overflow: hidden;
+    border-radius: var(--lion-border-radius);
+    box-shadow: var(--lion-shadow);
+}
+
+.lion-player-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Video element with advanced styling */
+.lion-player-video {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: filter 0.3s ease;
+    cursor: default;
+}
+
+.lion-player-video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+}
+
+/* Enhanced loading spinner with multiple states */
+.lion-player-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(15px);
+    z-index: 10;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+}
+
+.lion-player-loading.buffering {
+    background: rgba(10, 10, 10, 0.6);
+}
+
+.lion-player-loading.seeking {
+    background: rgba(10, 10, 10, 0.4);
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+.lion-player-loading .lion-player-spinner {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lion-player-loading .lion-player-spinner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 4px solid transparent;
+    border-top: 4px solid var(--lion-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    box-shadow: 0 0 30px var(--lion-primary-glow);
+}
+
+.lion-player-loading .lion-player-spinner::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 4px solid transparent;
+    border-bottom: 4px solid var(--lion-secondary);
+    border-radius: 50%;
+    animation: spin 1.5s linear infinite reverse;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+}
+
+.lion-player-loading .lion-player-spinner-inner {
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Loading text indicator */
+.lion-player-loading-text {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--lion-text);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    opacity: 0.8;
+    animation: pulse 2s infinite;
+}
+
+.lion-player-loading-text .loading-percentage {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--lion-primary);
+}
+
+.lion-player-loading-text .loading-status {
+    display: block;
+    font-size: 12px;
+    color: var(--lion-text-secondary);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+/* Buffer health indicator */
+.lion-player-buffer-health {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--lion-controls);
+    backdrop-filter: blur(10px);
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--lion-text);
+    font-size: 12px;
+    font-weight: 500;
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lion-player-buffer-health.visible {
+    opacity: 1;
+}
+
+.lion-player-buffer-health.good {
+    border-color: rgba(76, 175, 80, 0.5);
+    color: #4caf50;
+}
+
+.lion-player-buffer-health.medium {
+    border-color: rgba(255, 193, 7, 0.5);
+    color: #ffc107;
+}
+
+.lion-player-buffer-health.poor {
+    border-color: rgba(244, 67, 54, 0.5);
+    color: #f44336;
+}
+
+/* Premium big play button */
+.lion-player-big-play-button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, rgba(255, 0, 80, 0.1) 0%, transparent 70%);
+    cursor: pointer;
+    z-index: 5;
+    opacity: 0;
+    animation: fadeInScale 0.5s forwards;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.lion-player-big-play-button:hover {
+    background: radial-gradient(circle at center, rgba(255, 0, 80, 0.2) 0%, transparent 70%);
+}
+
+.lion-player-big-play-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(255, 0, 80, 0.9) 0%, rgba(255, 0, 80, 0.7) 100%);
+    border-radius: 50%;
+    position: relative;
+    transition: var(--lion-transition);
+    backdrop-filter: blur(20px);
+    box-shadow: 
+        0 8px 32px rgba(255, 0, 80, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.lion-player-big-play-button:hover .lion-player-big-play-icon {
+    transform: scale(1.1);
+    box-shadow: 
+        0 12px 40px rgba(255, 0, 80, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.lion-player-big-play-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-35%, -50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 14px 0 14px 24px;
+    border-color: transparent transparent transparent #fff;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Error display with glassmorphism */
+.lion-player-error-display {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(10, 10, 10, 0.9);
+    backdrop-filter: blur(20px);
+    z-index: 20;
+}
+
+.lion-player-error-message {
+    color: var(--lion-text);
+    font-size: 16px;
+    text-align: center;
+    max-width: 80%;
+    padding: 24px;
+    background: var(--lion-surface);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--lion-shadow);
+}
+
+/* Advanced controls with glassmorphism */
+.lion-player-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 20;
+    transition: var(--lion-transition);
+    background: linear-gradient(to top, 
+        var(--lion-controls) 0%, 
+        rgba(10, 10, 10, 0.8) 30%,
+        rgba(10, 10, 10, 0.6) 60%,
+        transparent 100%);
+    backdrop-filter: blur(20px);
+    padding: 60px 20px 20px;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.lion-player.controls-visible .lion-player-controls {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Enhanced progress bar with multi-layer buffer visualization */
+.lion-player-progress-bar {
+    position: relative;
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    overflow: visible;
+    transition: height 0.3s ease;
+}
+
+.lion-player-progress-bar:hover {
+    height: 12px;
+}
+
+/* Multiple buffer layers for better visualization */
+.lion-player-progress-buffered {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        var(--lion-buffer-color) 0%, 
+        var(--lion-buffer-loading) 50%, 
+        var(--lion-buffer-color) 100%);
+    width: 0%;
+    z-index: 1;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    background-size: 200% 100%;
+    animation: bufferShimmer 2s linear infinite;
+}
+
+@keyframes bufferShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.lion-player-progress-buffered.loading {
+    background: var(--lion-buffer-loading);
+    animation: bufferPulse 1s ease-in-out infinite;
+}
+
+@keyframes bufferPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+.lion-player-progress-filled {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--lion-primary) 0%, var(--lion-secondary) 100%);
+    width: 0%;
+    z-index: 2;
+    border-radius: 4px;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 15px var(--lion-primary-glow);
+}
+
+/* Segmented buffer visualization */
+.lion-player-progress-segments {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: flex;
+    pointer-events: none;
+}
+
+.lion-player-buffer-segment {
+    height: 100%;
+    background: var(--lion-buffer-color);
+    margin-right: 1px;
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
+}
+
+.lion-player-buffer-segment.loaded {
+    background: var(--lion-buffer-loading);
+}
+
+.lion-player-buffer-segment.loading {
+    background: var(--lion-buffer-loading);
+    animation: segmentPulse 1s ease-in-out infinite;
+}
+
+@keyframes segmentPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+/* Advanced progress handle */
+.lion-player-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: var(--progress-position, 0%);
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+    border: 3px solid var(--lion-primary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition: var(--lion-transition-fast);
+    box-shadow: 
+        0 0 0 rgba(255, 0, 80, 0.3),
+        0 6px 20px rgba(0, 0, 0, 0.4);
+    z-index: 4;
+}
+
+.lion-player-progress-bar:hover::after {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.lion-player-progress-bar:active::after {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* Premium time tooltip */
+.lion-player-time-tooltip {
+    position: absolute;
+    bottom: 20px;
+    transform: translateX(-50%);
+    background: var(--lion-controls);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+    z-index: 3;
+    opacity: 0;
+    transition: var(--lion-transition-fast);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.lion-player-progress-bar:hover .lion-player-time-tooltip {
+    opacity: 1;
+}
+
+/* Advanced controls bar */
+.lion-player-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 4px 0 8px; /* Increased left padding, reduced right padding */
+}
+
+/* Control groups */
+.lion-player-controls-left,
+.lion-player-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Modified right controls container - moved left */
+.lion-player-controls-right {
+    margin-right: 0; /* Removed right margin */
+    padding-right: 0; /* Removed right padding */
+}
+
+/* Next-gen buttons without transform */
+.lion-player-button {
+    background: var(--lion-surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    color: #fff !important;
+    outline: none;
+    transition: var(--lion-transition-fast);
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+.lion-player-button:hover {
+    background: var(--lion-surface-hover);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.lion-player-button:active {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.lion-player-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--lion-primary);
+}
+
+.lion-player-button.loading {
+    animation: buttonPulse 1s ease-in-out infinite;
+}
+
+.lion-player-button.active {
+    background: var(--lion-primary);
+    border-color: var(--lion-primary);
+}
+
+@keyframes buttonPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+/* Special play button */
+.lion-player-play-button {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, var(--lion-primary) 0%, #ff3366 100%);
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(255, 0, 80, 0.3);
+}
+
+.lion-player-play-button:hover {
+    background: linear-gradient(135deg, #ff0050 0%, #ff0066 100%);
+    box-shadow: 0 8px 24px rgba(255, 0, 80, 0.4);
+}
+
+/* Resume button */
+.lion-player-resume-button {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+}
+
+.lion-player-resume-button:hover {
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+    box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4);
+}
+
+/* Premium icons with SVG - WHITE */
+.lion-player-icon {
+    width: 24px;
+    height: 24px;
+    fill: #fff !important;
+    color: #fff !important;
+}
+
+/* Time display */
+.lion-player-time-display {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 12px;
+    white-space: nowrap;
+    min-width: 120px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Advanced volume control */
+.lion-player-volume-control {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.lion-player-volume-slider {
+    width: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    outline: none;
+    transition: var(--lion-transition);
+    margin-left: 12px;
+    opacity: 0;
+    border-radius: 2px;
+    position: relative;
+}
+
+.lion-player-volume-control:hover .lion-player-volume-slider {
+    width: 100px;
+    opacity: 1;
+}
+
+.lion-player-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: var(--lion-transition-fast);
+}
+
+.lion-player-volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(255, 0, 80, 0.2);
+}
+
+.lion-player-volume-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Premium settings menu - moved left */
+.lion-player-settings-menu {
+    position: absolute;
+    bottom: 70px;
+    right: 10px; /* Reduced right margin to move menu closer to button */
+    background: var(--lion-controls);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 8px;
+    min-width: 200px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    z-index: 30;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--lion-transition);
+}
+
+.lion-player-settings-menu.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.lion-player-settings-item {
+    padding: 12px 16px;
+    color: #fff;
+    cursor: pointer;
+    transition: var(--lion-transition-fast);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 12px;
+    margin: 2px 0;
+}
+
+.lion-player-settings-item:hover {
+    background: var(--lion-surface-hover);
+}
+
+.lion-player-settings-item.active {
+    color: var(--lion-primary);
+    background: rgba(255, 0, 80, 0.1);
+}
+
+.lion-player-settings-separator {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    margin: 8px 0;
+}
+
+/* Advanced animations */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.lion-player-playing .lion-player-big-play-icon {
+    animation: pulse 2s infinite;
+}
+
+/* Network status indicator */
+.lion-player-network-status {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: var(--lion-controls);
+    backdrop-filter: blur(10px);
+    padding: 6px 10px;
+    border-radius: 20px;
+    color: var(--lion-text);
+    font-size: 11px;
+    font-weight: 500;
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lion-player-network-status.visible {
+    opacity: 1;
+}
+
+.lion-player-network-status .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4caf50;
+    animation: statusPulse 2s infinite;
+}
+
+.lion-player-network-status.loading .status-dot {
+    background: #ffc107;
+}
+
+.lion-player-network-status.error .status-dot {
+    background: #f44336;
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* PiP container - moved left */
+.lion-player-pip-container {
+    position: fixed;
+    bottom: 20px;
+    right: 10px; /* Reduced right margin */
+    width: 400px;
+    height: 225px;
+    background: #000;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: none;
+    overflow: hidden;
+}
+
+.lion-player-pip-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .lion-player-controls {
+        padding: 50px 15px 15px;
+    }
+    
+    .lion-player-button {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .lion-player-play-button {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .lion-player-time-display {
+        font-size: 13px;
+        min-width: 100px;
+        margin: 0 8px;
+    }
+    
+    .lion-player-volume-control:hover .lion-player-volume-slider {
+        width: 80px;
+    }
+    
+    .lion-player-buffer-health,
+    .lion-player-network-status {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    
+    .lion-player-pip-container {
+        width: 300px;
+        height: 169px;
+    }
+}
+
+@media (max-width: 480px) {
+    .lion-player-time-display {
+        display: none;
+    }
+    
+    .lion-player-button {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .lion-player-play-button {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .lion-player-loading-text {
+        font-size: 12px;
+    }
+    
+    .lion-player-loading-text .loading-percentage {
+        font-size: 18px;
+    }
+}
+
+/* Performance optimizations */
+.lion-player {
+    contain: layout style paint;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .lion-player-button {
+        border: 2px solid #fff;
+    }
+    
+    .lion-player-progress-filled {
+        background: #fff;
+    }
+    
+    .lion-player-icon {
+        fill: #fff !important;
+        color: #fff !important;
+    }
+}
+
+/* Screen reader only content */
+.lion-player-live-region {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
