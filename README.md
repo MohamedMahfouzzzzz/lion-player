@@ -21,12 +21,13 @@ LionPlayer is a modern, feature-rich video player built with vanilla JavaScript 
 
 ### CDN
 ```html
-<script src="https://cdn.jsdelivr.net/npm/lion-player/dist/lion-player.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lion-player/dist/lion-player.min.css">
+<script src="https://cdn.jsdelivr.net/gh/MohamedMahfouzzzzz/lion-player/lionplayer.js"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MohamedMahfouzzzzz/lion-player/lionplayer.min.css">
 ```
 
 ### Direct Download
-Download the latest release from the [GitHub repository](https://github.com/yourusername/lion-player).
+Download the latest release from the [GitHub repository](https://github.com/MohamedMahfouzzzzz/lion-player).
 
 ## Basic Usage
 
@@ -603,14 +604,7 @@ Some features may not be available in older browsers:
 </script>
 ```
 
-## License
-
-LionPlayer is released under the MIT License. See [LICENSE](LICENSE) for more information.
-
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Support
 
-For support, please open an issue on the [GitHub repository](https://github.com/yourusername/lion-player/issues).
+For support, please open an issue on the [GitHub repository](https://github.com/MohamedMahfouzzzzz/lion-player/issues).
