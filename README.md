@@ -72,15 +72,6 @@ LionPlayer is a modern, feature-rich video player built with vanilla JavaScript 
 </html>
 ```
 
-### NPM
-
-```bash
-npm install lion-player
-```
-
-```javascript
-import LionPlayer from 'lion-player';
-```
 
 ## Basic Usage
 
